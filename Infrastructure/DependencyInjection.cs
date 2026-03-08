@@ -13,7 +13,7 @@ public static class DependencyInjection
 
         services.AddSingleton(new RedisConnectionFactory(options!.ConnectionString));
 
-        services.AddScoped<IUserSessionService, UserSessionService>();
+        services.AddScoped<ISessionService, SessionService>();
         services.AddScoped<IPresenceService, PresenceService>();
 
         return services;

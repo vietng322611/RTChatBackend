@@ -1,6 +1,6 @@
 ﻿namespace RTChatBackend.Application.Interfaces;
 
-public interface IUserSessionService
+public interface ISessionService
 {
     Task SetTemporaryUserAsync(Guid userId, string data, TimeSpan expiry);
 

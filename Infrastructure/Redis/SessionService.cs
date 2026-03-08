@@ -3,7 +3,7 @@ using StackExchange.Redis;
 
 namespace RTChatBackend.Infrastructure.Redis;
 
-public class UserSessionService(RedisConnectionFactory factory) : IUserSessionService
+public class SessionService(RedisConnectionFactory factory) : ISessionService
 {
     private readonly IDatabase _redis = factory.Connection.GetDatabase();
 
