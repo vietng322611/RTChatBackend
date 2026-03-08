@@ -1,4 +1,6 @@
-﻿namespace RTChatBackend.Application.Interfaces;
+﻿using RTChatBackend.Application.DTOs;
+
+namespace RTChatBackend.Application.Interfaces;
 
 public interface IMessageService
 {
