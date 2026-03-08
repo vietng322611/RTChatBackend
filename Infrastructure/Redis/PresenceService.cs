@@ -1,11 +1,11 @@
 ﻿using RTChatBackend.Application.Interfaces;
 using StackExchange.Redis;
 
-namespace RTChatBackend.Application.Services;
+namespace RTChatBackend.Infrastructure.Redis;
 
-public class PresenceService(IConnectionMultiplexer redis) : IPresenceService
+public class PresenceService(RedisConnectionFactory factory) : IPresenceService
 {
-    private readonly IDatabase _redis = redis.GetDatabase();
+    private readonly IDatabase _redis = factory.Connection.GetDatabase();
 
     public Task SetOnlineAsync(Guid userId, TimeSpan ttl)
     {
