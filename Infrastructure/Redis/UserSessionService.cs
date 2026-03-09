@@ -11,9 +11,4 @@ public class UserSessionService(RedisConnectionFactory factory) : IUserSessionSe
     {
         return _redis.StringSetAsync($"temp-user:{userId}", data, expiry);
     }
-
-    public async Task<string?> GetTemporaryUserAsync(Guid userId)
-    {
-        return await _redis.StringGetAsync($"temp-user:{userId}");
-    }
 }
