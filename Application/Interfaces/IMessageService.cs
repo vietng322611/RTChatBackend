@@ -5,7 +5,7 @@ namespace RTChatBackend.Application.Interfaces;
 public interface IMessageService
 {
     Task<MessageDto> SendAsync(
-        Guid conversationId,
+        Guid chatId,
         Guid senderId,
         string content);
 
