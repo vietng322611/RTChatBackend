@@ -7,20 +7,20 @@ namespace RTChatBackend.Application.Services;
 
 public class UserService: IUserService
 {
-    private readonly IUserSessionService _userSessionService;
+    private readonly IUserSessionService _userSession;
     private readonly ICodeGenerator _codeGenerator;
     private readonly int _sessionTtl;
 
     public UserService(
         IConfiguration config,
-        IUserSessionService userSessionService,
+        IUserSessionService userSession,
         ICodeGenerator codeGenerator)
     {
         if (!int.TryParse(config["Redis:SessionTtl"], out _sessionTtl))
         {
             throw new ArgumentException("Invalid SessionTtl", nameof(config));
         }
-        _userSessionService = userSessionService;
+        _userSession = userSession;
         _codeGenerator = codeGenerator;
     }
     
@@ -40,7 +40,7 @@ public class UserService: IUserService
 
         var data = JsonSerializer.Serialize(user);
         
-        await _userSessionService.SetTemporaryUserAsync(
+        await _userSession.SetTemporaryUserAsync(
             user.UserId,
             data,
             TimeSpan.FromMinutes(_sessionTtl));

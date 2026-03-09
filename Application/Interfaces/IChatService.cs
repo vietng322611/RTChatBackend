@@ -4,7 +4,7 @@ namespace RTChatBackend.Application.Interfaces;
 
 public interface IChatService
 {
-    Task<ChatDto> GetOrCreateAsync(Guid user1Id, Guid user2Id);
+    Task<ChatDto> GetOrCreateAsync(Guid uid1, Guid uid2);
 
     Task<List<ChatDto>> GetUserChatsAsync(Guid userId);
 }

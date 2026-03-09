@@ -1,6 +1,6 @@
 ﻿namespace RTChatBackend.Core.Models;
 
-public class ChatMessage
+public class Message
 {
     public Guid Id { get; set; }
     public Guid ChatId { get; set; }
