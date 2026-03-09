@@ -33,8 +33,34 @@ public class MessageStorageService(RedisConnectionFactory factory): IMessageStor
         return message;
     }
 
-    public Task<List<Message>> GetMessagesAsync(Guid chatId)
+    public async Task<List<Message>> GetMessagesAsync(Guid chatId)
     {
-        throw new NotImplementedException();
+        var chatMessagesKey = $"chat:messages:{chatId}";
+        var messageIds = await _redis.ListRangeAsync(chatMessagesKey);
+
+        if (messageIds.Length == 0)
+        {
+            return [];
+        }
+
+        var messageKeys = messageIds
+            .Where(id => id.HasValue)
+            .Select(id => (RedisKey)$"message:{id}")
+            .ToArray();
+
+        var messageValues = await _redis.StringGetAsync(messageKeys);
+
+        var messages = new List<Message>(messageValues.Length);
+
+        foreach (var value in messageValues.Where(v => v.HasValue))
+        {
+            var message = JsonSerializer.Deserialize<Message>(value.ToString());
+            if (message is not null)
+            {
+                messages.Add(message);
+            }
+        }
+
+        return messages;
     }
 }
