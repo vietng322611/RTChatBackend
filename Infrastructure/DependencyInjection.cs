@@ -15,6 +15,8 @@ public static class DependencyInjection
 
         services.AddScoped<IUserSessionService, UserSessionService>();
         services.AddScoped<IPresenceService, PresenceService>();
+        services.AddScoped<IChatStorageService, ChatStorageService>();
+        services.AddScoped<IMessageStorageService, MessageStorageService>();
 
         return services;
     }
