@@ -11,4 +11,27 @@ public class UserSessionService(RedisConnectionFactory factory) : IUserSessionSe
     {
         return _redis.StringSetAsync($"temp-user:{userId}", data, expiry);
     }
+
+    public Task<bool> IsUsernameTakenAsync(string username)
+    {
+        return _redis.KeyExistsAsync($"username:{username}");
+    }
+
+    public Task SetUsernameMappingAsync(string username, Guid userId, TimeSpan expiry)
+    {
+        return _redis.StringSetAsync($"username:{username}", userId.ToString(), expiry);
+    }
+
+    public async Task<Guid?> GetUserIdByUsernameAsync(string username)
+    {
+        var value = await _redis.StringGetAsync($"username:{username}");
+        return value.HasValue && Guid.TryParse(value.ToString(), out var userId)
+            ? userId
+            : null;
+    }
+
+    public async Task<string?> GetUserDataAsync(Guid userId)
+    {
+        return await _redis.StringGetAsync($"temp-user:{userId}");
+    }
 }
