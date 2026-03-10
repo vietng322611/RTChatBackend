@@ -9,9 +9,11 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        var options = configuration.GetSection("Redis").Get<RedisOptions>();
+        var options = configuration.GetSection("Redis").Get<RedisOptions>() 
+                      ?? throw new ArgumentException("Redis configuration is missing.");
 
-        services.AddSingleton(new RedisConnectionFactory(options!.ConnectionString));
+        services.AddSingleton(options);
+        services.AddSingleton(new RedisConnectionFactory(options.ConnectionString));
 
         services.AddScoped<IUserSessionService, UserSessionService>();
         services.AddScoped<IPresenceService, PresenceService>();
