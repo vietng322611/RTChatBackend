@@ -33,7 +33,7 @@ public class UserService: IUserService
 
         if (await _userSession.IsUsernameTakenAsync(username))
         {
-            return null; // Or throw an exception, but DTO? returns null usually means not found or conflict in this context
+            return null;
         }
 
         var user = new User
@@ -55,6 +55,11 @@ public class UserService: IUserService
             user.Username,
             user.UserId,
             expiry);
+        
+        await _userSession.SetLoginCodeMappingAsync(
+            user.LoginCode,
+            user.UserId,
+            expiry);
 
         return new UserDto
         {
@@ -64,9 +69,25 @@ public class UserService: IUserService
         };
     }
 
-    public Task<UserDto?> LoginAsync(string loginCode)
+    public async Task<UserDto?> LoginAsync(string loginCode)
     {
-        throw new NotImplementedException();
+        if (string.IsNullOrWhiteSpace(loginCode)) return null;
+
+        var userId = await _userSession.GetUserIdByLoginCodeAsync(loginCode);
+        if (userId == null) return null;
+
+        var userData = await _userSession.GetUserDataAsync(userId.Value);
+        if (userData == null) return null;
+
+        var user = JsonSerializer.Deserialize<User>(userData);
+        if (user == null) return null;
+
+        return new UserDto
+        {
+            UserId = user.UserId,
+            Username = user.Username,
+            LoginCode = user.LoginCode
+        };
     }
 
     public async Task<UserDto?> GetByUsernameAsync(string username)
