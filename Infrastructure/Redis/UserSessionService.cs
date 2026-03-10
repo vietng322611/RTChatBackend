@@ -22,9 +22,22 @@ public class UserSessionService(RedisConnectionFactory factory) : IUserSessionSe
         return _redis.StringSetAsync($"username:{username}", userId.ToString(), expiry);
     }
 
+    public Task SetLoginCodeMappingAsync(string loginCode, Guid userId, TimeSpan expiry)
+    {
+        return _redis.StringSetAsync($"logincode:{loginCode}", userId.ToString(), expiry);
+    }
+
     public async Task<Guid?> GetUserIdByUsernameAsync(string username)
     {
         var value = await _redis.StringGetAsync($"username:{username}");
+        return value.HasValue && Guid.TryParse(value.ToString(), out var userId)
+            ? userId
+            : null;
+    }
+
+    public async Task<Guid?> GetUserIdByLoginCodeAsync(string loginCode)
+    {
+        var value = await _redis.StringGetAsync($"logincode:{loginCode}");
         return value.HasValue && Guid.TryParse(value.ToString(), out var userId)
             ? userId
             : null;
