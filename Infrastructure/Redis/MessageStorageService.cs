@@ -5,9 +5,12 @@ using StackExchange.Redis;
 
 namespace RTChatBackend.Infrastructure.Redis;
 
-public class MessageStorageService(RedisConnectionFactory factory): IMessageStorageService
+public class MessageStorageService(
+    RedisConnectionFactory factory,
+    RedisOptions options) : IMessageStorageService
 {
-    private readonly IDatabase _redis = factory.Connection.GetDatabase();   
+    private readonly IDatabase _redis = factory.Connection.GetDatabase();
+    private readonly TimeSpan _messageTtl = TimeSpan.FromMinutes(options.Ttl);
     
     public async Task<Message> SendMessageAsync(Guid chatId, Guid senderId, string content)
     {
@@ -22,13 +25,15 @@ public class MessageStorageService(RedisConnectionFactory factory): IMessageStor
         };
 
         var serialized = JsonSerializer.Serialize(message);
-        var created = await _redis.StringSetAsync($"message:{messageId}", serialized, when: When.NotExists);
+        var created = await _redis.StringSetAsync($"message:{messageId}", serialized, _messageTtl, when: When.NotExists);
         if (!created)
         {
             throw new Exception("Failed to store message.");
         }
         
-        await _redis.SetAddAsync($"chat:messages:{chatId}", messageId.ToString());
+        var chatMessagesKey = $"chat:messages:{chatId}";
+        await _redis.SetAddAsync(chatMessagesKey, messageId.ToString());
+        await _redis.KeyExpireAsync(chatMessagesKey, _messageTtl);
         
         return message;
     }
@@ -36,7 +41,11 @@ public class MessageStorageService(RedisConnectionFactory factory): IMessageStor
     public async Task<List<Message>> GetMessagesAsync(Guid chatId)
     {
         var chatMessagesKey = $"chat:messages:{chatId}";
-        var messageIds = await _redis.ListRangeAsync(chatMessagesKey);
+        
+        // Refresh TTL on read
+        await _redis.KeyExpireAsync(chatMessagesKey, _messageTtl);
+        
+        var messageIds = await _redis.SetMembersAsync(chatMessagesKey);
 
         if (messageIds.Length == 0)
         {
@@ -57,6 +66,8 @@ public class MessageStorageService(RedisConnectionFactory factory): IMessageStor
             var message = JsonSerializer.Deserialize<Message>(value.ToString());
             if (message is not null)
             {
+                // Refresh message TTL
+                await _redis.KeyExpireAsync($"message:{message.Id}", _messageTtl);
                 messages.Add(message);
             }
         }

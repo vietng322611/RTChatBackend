@@ -5,9 +5,12 @@ using StackExchange.Redis;
 
 namespace RTChatBackend.Infrastructure.Redis;
 
-public class ChatStorageService(RedisConnectionFactory factory): IChatStorageService
+public class ChatStorageService(
+    RedisConnectionFactory factory,
+    RedisOptions options) : IChatStorageService
 {
     private readonly IDatabase _redis = factory.Connection.GetDatabase();
+    private readonly TimeSpan _chatTtl = TimeSpan.FromMinutes(options.Ttl);
     
     public async Task<Chat> GetOrCreateChatAsync(Guid uid1, Guid uid2)
     {
@@ -18,8 +21,15 @@ public class ChatStorageService(RedisConnectionFactory factory): IChatStorageSer
         if (existingValue.HasValue)
         {
             var existingChat = JsonSerializer.Deserialize<Chat>(existingValue.ToString());
-            return existingChat ?? 
-                   throw new Exception("Stored chat payload is invalid.");
+            
+            // Refresh TTL
+            await _redis.KeyExpireAsync(pairKey, _chatTtl);
+            var chatData = existingChat ?? throw new Exception("Stored chat payload is invalid.");
+            await _redis.KeyExpireAsync($"chat:id:{chatData.Id}", _chatTtl);
+            await _redis.KeyExpireAsync($"user-chats:{uid1}", _chatTtl);
+            await _redis.KeyExpireAsync($"user-chats:{uid2}", _chatTtl);
+            
+            return chatData;
         }
 
         var chat = new Chat
@@ -32,12 +42,16 @@ public class ChatStorageService(RedisConnectionFactory factory): IChatStorageSer
 
         var serialized = JsonSerializer.Serialize(chat);
 
-        var created = await _redis.StringSetAsync(pairKey, serialized, when: When.NotExists);
+        var created = await _redis.StringSetAsync(pairKey, serialized, _chatTtl, when: When.NotExists);
         if (created)
         {
             await _redis.SetAddAsync($"user-chats:{uid1}", chat.Id.ToString());
+            await _redis.KeyExpireAsync($"user-chats:{uid1}", _chatTtl);
+            
             await _redis.SetAddAsync($"user-chats:{uid2}", chat.Id.ToString());
-            await _redis.StringSetAsync($"chat:id:{chat.Id}", serialized);
+            await _redis.KeyExpireAsync($"user-chats:{uid2}", _chatTtl);
+            
+            await _redis.StringSetAsync($"chat:id:{chat.Id}", serialized, _chatTtl);
 
             return chat;
         }
@@ -69,7 +83,7 @@ public class ChatStorageService(RedisConnectionFactory factory): IChatStorageSer
         var pairKey = $"chat:pair:{chat.Uid1}:{chat.Uid2}";
         var chatMessagesKey = $"chat:messages:{chatId}";
 
-        var messageIds = await _redis.ListRangeAsync(chatMessagesKey);
+        var messageIds = await _redis.SetMembersAsync(chatMessagesKey);
         var keysToDelete = new List<RedisKey>
         {
             chatKey,

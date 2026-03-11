@@ -2,28 +2,18 @@
 using RTChatBackend.Application.DTOs;
 using RTChatBackend.Application.Interfaces;
 using RTChatBackend.Core.Models;
+using RTChatBackend.Infrastructure.Redis;
 
 namespace RTChatBackend.Application.Services;
 
-public class UserService: IUserService
+public class UserService(
+    RedisOptions options,
+    IUserSessionService userSession,
+    ICodeGenerator codeGenerator)
+    : IUserService
 {
-    private readonly IUserSessionService _userSession;
-    private readonly ICodeGenerator _codeGenerator;
-    private readonly int _sessionTtl;
+    private readonly TimeSpan _sessionTtl = TimeSpan.FromMinutes(options.Ttl);
 
-    public UserService(
-        IConfiguration config,
-        IUserSessionService userSession,
-        ICodeGenerator codeGenerator)
-    {
-        if (!int.TryParse(config["Redis:SessionTtl"], out _sessionTtl))
-        {
-            throw new ArgumentException("Invalid SessionTtl", nameof(config));
-        }
-        _userSession = userSession;
-        _codeGenerator = codeGenerator;
-    }
-    
     public async Task<UserDto?> CreateAsync(string username)
     {
         if (string.IsNullOrWhiteSpace(username))
@@ -31,7 +21,7 @@ public class UserService: IUserService
             throw new ArgumentException("Username cannot be empty.", nameof(username));
         }
 
-        if (await _userSession.IsUsernameTakenAsync(username))
+        if (await userSession.IsUsernameTakenAsync(username))
         {
             return null;
         }
@@ -40,26 +30,25 @@ public class UserService: IUserService
         {
             UserId = Guid.NewGuid(),
             Username = username,
-            LoginCode = _codeGenerator.GenerateSessionCode()
+            LoginCode = codeGenerator.GenerateSessionCode()
         };
 
         var data = JsonSerializer.Serialize(user);
-        var expiry = TimeSpan.FromMinutes(_sessionTtl);
         
-        await _userSession.SetTemporaryUserAsync(
+        await userSession.SetTemporaryUserAsync(
             user.UserId,
             data,
-            expiry);
+            _sessionTtl);
         
-        await _userSession.SetUsernameMappingAsync(
+        await userSession.SetUsernameMappingAsync(
             user.Username,
             user.UserId,
-            expiry);
+            _sessionTtl);
         
-        await _userSession.SetLoginCodeMappingAsync(
+        await userSession.SetLoginCodeMappingAsync(
             user.LoginCode,
             user.UserId,
-            expiry);
+            _sessionTtl);
 
         return new UserDto
         {
@@ -73,10 +62,10 @@ public class UserService: IUserService
     {
         if (string.IsNullOrWhiteSpace(loginCode)) return null;
 
-        var userId = await _userSession.GetUserIdByLoginCodeAsync(loginCode);
+        var userId = await userSession.GetUserIdByLoginCodeAsync(loginCode);
         if (userId == null) return null;
 
-        var userData = await _userSession.GetUserDataAsync(userId.Value);
+        var userData = await userSession.GetUserDataAsync(userId.Value);
         if (userData == null) return null;
 
         var user = JsonSerializer.Deserialize<User>(userData);
@@ -92,10 +81,10 @@ public class UserService: IUserService
 
     public async Task<UserDto?> GetByUsernameAsync(string username)
     {
-        var userId = await _userSession.GetUserIdByUsernameAsync(username);
+        var userId = await userSession.GetUserIdByUsernameAsync(username);
         if (userId == null) return null;
 
-        var userData = await _userSession.GetUserDataAsync(userId.Value);
+        var userData = await userSession.GetUserDataAsync(userId.Value);
         if (userData == null) return null;
 
         var user = JsonSerializer.Deserialize<User>(userData);
