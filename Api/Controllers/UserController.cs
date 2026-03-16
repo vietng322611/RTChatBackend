@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RTChatBackend.Api.DTOs;
-using RTChatBackend.Application.DTOs;
 using RTChatBackend.Application.Interfaces;
 
 namespace RTChatBackend.Api.Controllers;
@@ -16,8 +15,8 @@ public class UserController(
     [HttpGet("{username}")]
     public async Task<IActionResult> GetByUsername([FromRoute] string username)
     {
-        var user = await userService.GetByUsernameAsync(username);
-        return user == null ? NotFound() : Ok(user);
+        var userDto = await userService.GetByUsernameAsync(username);
+        return userDto == null ? NotFound() : Ok(userDto);
     }
     
     [HttpPost("register")]
@@ -32,7 +31,15 @@ public class UserController(
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
-        var user = await userService.LoginAsync(request.LoginCode);
-        return user == null ? Unauthorized() : Ok(user);
+        var userDto = await userService.LoginAsync(request.LoginCode);
+        return userDto == null ? Unauthorized() : Ok(userDto);
+    }
+    
+    [Authorize]
+    [HttpGet("search")]
+    public async Task<IActionResult> Search([FromQuery] string username)
+    {
+        var userDtos = await userService.SearchAsync(username);
+        return Ok(userDtos);
     }
 }
