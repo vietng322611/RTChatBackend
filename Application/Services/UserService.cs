@@ -14,7 +14,7 @@ public class UserService(
 {
     private readonly TimeSpan _sessionTtl = TimeSpan.FromMinutes(options.Ttl);
 
-    public async Task<UserDto?> CreateAsync(string username)
+    public async Task<User?> CreateAsync(string username)
     {
         if (string.IsNullOrWhiteSpace(username))
         {
@@ -50,12 +50,7 @@ public class UserService(
             user.UserId,
             _sessionTtl);
 
-        return new UserDto
-        {
-            UserId = user.UserId,
-            Username = user.Username,
-            LoginCode = user.LoginCode
-        };
+        return user;
     }
 
     public async Task<UserDto?> LoginAsync(string loginCode)
@@ -74,8 +69,7 @@ public class UserService(
         return new UserDto
         {
             UserId = user.UserId,
-            Username = user.Username,
-            LoginCode = user.LoginCode
+            Username = user.Username
         };
     }
 
@@ -93,8 +87,7 @@ public class UserService(
         return new UserDto
         {
             UserId = user.UserId,
-            Username = user.Username,
-            LoginCode = user.LoginCode
+            Username = user.Username
         };
     }
 
