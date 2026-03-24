@@ -12,7 +12,7 @@ public class ChatStorageService(
     private readonly IDatabase _redis = factory.Connection.GetDatabase();
     private readonly TimeSpan _chatTtl = TimeSpan.FromMinutes(options.Ttl);
     
-    public async Task<Chat> GetOrCreateChatAsync(Guid uid1, Guid uid2)
+    public async Task<Chat> GetOrCreateAsync(Guid uid1, Guid uid2)
     {
         // Ids order will not be handled here
         var pairKey = $"chat:pair:{uid1}:{uid2}";
@@ -65,38 +65,5 @@ public class ChatStorageService(
         var winnerChat = JsonSerializer.Deserialize<Chat>(winnerValue.ToString());
         return winnerChat 
                ?? throw new Exception("Stored chat payload is invalid.");
-    }
-
-    public async Task RemoveChatAsync(Guid chatId)
-    {
-        var chatKey = $"chat:id:{chatId}";
-        var chatValue = await _redis.StringGetAsync(chatKey);
-
-        if (!chatValue.HasValue) return;
-
-        var chat = JsonSerializer.Deserialize<Chat>(chatValue.ToString());
-        if (chat is null)
-        {
-            throw new Exception("Stored chat payload is invalid.");
-        }
-
-        var pairKey = $"chat:pair:{chat.Uid1}:{chat.Uid2}";
-        var chatMessagesKey = $"chat:messages:{chatId}";
-
-        var messageIds = await _redis.SetMembersAsync(chatMessagesKey);
-        var keysToDelete = new List<RedisKey>
-        {
-            chatKey,
-            pairKey,
-            chatMessagesKey
-        };
-        keysToDelete.AddRange(messageIds
-            .Where(id => id.HasValue)
-            .Select(messageId => $"message:{messageId}")
-            .Select(dummy => (RedisKey)dummy));
-
-        await _redis.SetRemoveAsync($"user-chats:{chat.Uid1}", chatId.ToString());
-        await _redis.SetRemoveAsync($"user-chats:{chat.Uid2}", chatId.ToString());
-        await _redis.KeyDeleteAsync(keysToDelete.ToArray());
     }
 }
