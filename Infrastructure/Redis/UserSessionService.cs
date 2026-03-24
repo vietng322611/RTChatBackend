@@ -24,7 +24,7 @@ public class UserSessionService(RedisConnectionFactory factory) : IUserSessionSe
 
     public Task SetLoginCodeMappingAsync(string loginCode, Guid userId, TimeSpan expiry)
     {
-        return _redis.StringSetAsync($"logincode:{loginCode}", userId.ToString(), expiry);
+        return _redis.StringSetAsync($"login-code:{loginCode}", userId.ToString(), expiry);
     }
 
     public async Task<Guid?> GetUserIdByUsernameAsync(string username)
@@ -37,7 +37,7 @@ public class UserSessionService(RedisConnectionFactory factory) : IUserSessionSe
 
     public async Task<Guid?> GetUserIdByLoginCodeAsync(string loginCode)
     {
-        var value = await _redis.StringGetAsync($"logincode:{loginCode}");
+        var value = await _redis.StringGetAsync($"login-code:{loginCode}");
         return value.HasValue && Guid.TryParse(value.ToString(), out var userId)
             ? userId
             : null;
