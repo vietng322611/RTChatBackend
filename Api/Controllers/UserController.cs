@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RTChatBackend.Api.DTOs;
 using RTChatBackend.Application.Interfaces;
@@ -32,7 +35,35 @@ public class UserController(
     public async Task<IActionResult> Login([FromBody] LoginRequest request)
     {
         var userDto = await userService.LoginAsync(request.LoginCode);
-        return userDto == null ? Unauthorized() : Ok(userDto);
+        if (userDto == null) return Unauthorized();
+
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.NameIdentifier, userDto.UserId.ToString()),
+            new(ClaimTypes.Name, userDto.Username)
+        };
+
+        var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var authProperties = new AuthenticationProperties
+        {
+            IsPersistent = true,
+            ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(15)
+        };
+
+        await HttpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            new ClaimsPrincipal(claimsIdentity),
+            authProperties);
+
+        return Ok(userDto);
+    }
+
+    [Authorize]
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        return Ok();
     }
     
     [Authorize]
