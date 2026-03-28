@@ -11,6 +11,21 @@ public class ChatStorageService(
 {
     private readonly IDatabase _redis = factory.Connection.GetDatabase();
     private readonly TimeSpan _chatTtl = TimeSpan.FromMinutes(options.Ttl);
+
+    public async Task<Chat?> GetAsync(Guid chatId)
+    {
+        var chatKey = $"chat:id:{chatId}";
+        var value = await _redis.StringGetAsync(chatKey);
+        if (!value.HasValue) return null;
+
+        var chat = JsonSerializer.Deserialize<Chat>(value.ToString());
+        if (chat != null)
+        {
+            await _redis.KeyExpireAsync(chatKey, _chatTtl);
+        }
+
+        return chat;
+    }
     
     public async Task<Chat> GetOrCreateAsync(Guid uid1, Guid uid2)
     {
@@ -65,5 +80,42 @@ public class ChatStorageService(
         var winnerChat = JsonSerializer.Deserialize<Chat>(winnerValue.ToString());
         return winnerChat 
                ?? throw new Exception("Stored chat payload is invalid.");
+    }
+
+    public async Task<List<Chat>> GetUserChatsAsync(Guid userId)
+    {
+        var userChatsKey = $"user-chats:{userId}";
+        
+        // Refresh TTL on read
+        await _redis.KeyExpireAsync(userChatsKey, _chatTtl);
+        
+        var chatIds = await _redis.SetMembersAsync(userChatsKey);
+        
+        if (chatIds.Length == 0)
+        {
+            return [];
+        }
+
+        var chatKeys = chatIds
+            .Where(id => id.HasValue)
+            .Select(id => (RedisKey)$"chat:id:{id}")
+            .ToArray();
+
+        var chatValues = await _redis.StringGetAsync(chatKeys);
+
+        var chats = new List<Chat>(chatValues.Length);
+
+        foreach (var value in chatValues.Where(v => v.HasValue))
+        {
+            var chat = JsonSerializer.Deserialize<Chat>(value.ToString());
+            if (chat is not null)
+            {
+                // Refresh chat TTL
+                await _redis.KeyExpireAsync($"chat:id:{chat.Id}", _chatTtl);
+                chats.Add(chat);
+            }
+        }
+
+        return chats;
     }
 }
