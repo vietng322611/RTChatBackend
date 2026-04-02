@@ -1,11 +1,16 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using RTChatBackend.Api.Hubs;
 using RTChatBackend.Application.Interfaces;
 using RTChatBackend.Application.Services;
 using RTChatBackend.Infrastructure;
+using RTChatBackend.Infrastructure.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRedisInfrastructure(builder.Configuration);
+
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<PresenceService>();
 
 builder.Services.AddSingleton<ICodeGenerator, CodeGenerator>();
 builder.Services.AddScoped<IUserService, UserService>();
@@ -46,6 +51,8 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapHub<ChatHub>("/chatHub");
 
 app.MapControllers();
 app.Run();
