@@ -10,7 +10,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRedisInfrastructure(builder.Configuration);
 
 builder.Services.AddSignalR();
-builder.Services.AddSingleton<PresenceService>();
 
 builder.Services.AddSingleton<ICodeGenerator, CodeGenerator>();
 builder.Services.AddScoped<IUserService, UserService>();
