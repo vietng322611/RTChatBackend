@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using RTChatBackend.Application.Interfaces;
@@ -11,7 +10,7 @@ public class ChatHub(
     IPresenceService presenceService,
     IMessageService messageService,
     IChatService chatService
-    ): Hub
+) : Hub
 {
     public override async Task OnConnectedAsync()
     {
@@ -19,14 +18,12 @@ public class ChatHub(
         if (Guid.TryParse(userIdClaim, out var userId))
         {
             var becameOnline = await presenceService.SetOnlineAsync(userId, Context.ConnectionId);
-            if (becameOnline)
-            {
-                await Clients.All.SendAsync("UserStatusChanged", userId.ToString(), "online");
-            }
+            if (becameOnline) await Clients.All.SendAsync("UserStatusChanged", userId.ToString(), "online");
 
             // Join user-specific group to receive private messages
             await Groups.AddToGroupAsync(Context.ConnectionId, userId.ToString());
         }
+
         await base.OnConnectedAsync();
     }
 
@@ -36,22 +33,20 @@ public class ChatHub(
         if (Guid.TryParse(userIdClaim, out var userId))
         {
             var becameOffline = await presenceService.SetOfflineAsync(userId, Context.ConnectionId);
-            if (becameOffline)
-            {
-                await Clients.All.SendAsync("UserStatusChanged", userId.ToString(), "offline");
-            }
+            if (becameOffline) await Clients.All.SendAsync("UserStatusChanged", userId.ToString(), "offline");
         }
+
         await base.OnDisconnectedAsync(exception);
     }
-    
+
     // Clients can call this when open an existing chat
     public async Task GetUserStatus(Guid userId)
     {
         var isOnline = await presenceService.IsOnlineAsync(userId);
-        await Clients.Caller.SendAsync("ReceiveUserStatus", 
+        await Clients.Caller.SendAsync("ReceiveUserStatus",
             userId.ToString(), isOnline ? "online" : "offline");
     }
-    
+
     public async Task SendMessage(Guid chatId, string content)
     {
         var senderIdClaim = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);

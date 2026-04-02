@@ -5,7 +5,7 @@ namespace RTChatBackend.Application.Services;
 
 public class MessageService(
     IMessageStorageService messageStorage
-    ): IMessageService
+) : IMessageService
 {
     public async Task<MessageDto> SendAsync(Guid chatId, Guid senderId, string content)
     {
@@ -30,6 +30,6 @@ public class MessageService(
             SenderId = m.SenderId,
             Content = m.Content,
             CreatedAt = m.CreatedAt
-        }).ToList(); 
+        }).ToList();
     }
 }

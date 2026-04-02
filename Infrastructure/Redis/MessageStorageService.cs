@@ -9,9 +9,9 @@ public class MessageStorageService(
     RedisConnectionFactory factory,
     RedisOptions options) : IMessageStorageService
 {
-    private readonly IDatabase _redis = factory.Connection.GetDatabase();
     private readonly TimeSpan _messageTtl = TimeSpan.FromMinutes(options.Ttl);
-    
+    private readonly IDatabase _redis = factory.Connection.GetDatabase();
+
     public async Task<Message> SendMessageAsync(Guid chatId, Guid senderId, string content)
     {
         var messageId = Guid.NewGuid();
@@ -25,32 +25,26 @@ public class MessageStorageService(
         };
 
         var serialized = JsonSerializer.Serialize(message);
-        var created = await _redis.StringSetAsync($"message:{messageId}", serialized, _messageTtl, when: When.NotExists);
-        if (!created)
-        {
-            throw new Exception("Failed to store message.");
-        }
-        
+        var created = await _redis.StringSetAsync($"message:{messageId}", serialized, _messageTtl, When.NotExists);
+        if (!created) throw new Exception("Failed to store message.");
+
         var chatMessagesKey = $"chat:messages:{chatId}";
         await _redis.SetAddAsync(chatMessagesKey, messageId.ToString());
         await _redis.KeyExpireAsync(chatMessagesKey, _messageTtl);
-        
+
         return message;
     }
 
     public async Task<List<Message>> GetMessagesAsync(Guid chatId)
     {
         var chatMessagesKey = $"chat:messages:{chatId}";
-        
+
         // Refresh TTL on read
         await _redis.KeyExpireAsync(chatMessagesKey, _messageTtl);
-        
+
         var messageIds = await _redis.SetMembersAsync(chatMessagesKey);
 
-        if (messageIds.Length == 0)
-        {
-            return [];
-        }
+        if (messageIds.Length == 0) return [];
 
         var messageKeys = messageIds
             .Where(id => id.HasValue)

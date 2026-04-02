@@ -3,8 +3,12 @@
 public static class RedisKeys
 {
     public static string Session(string code)
-        => $"session:{code}";
+    {
+        return $"session:{code}";
+    }
 
     public static string Messages(string code)
-        => $"messages:{code}";
+    {
+        return $"messages:{code}";
+    }
 }

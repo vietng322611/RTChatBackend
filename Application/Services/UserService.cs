@@ -17,14 +17,9 @@ public class UserService(
     public async Task<User?> CreateAsync(string username)
     {
         if (string.IsNullOrWhiteSpace(username))
-        {
             throw new ArgumentException("Username cannot be empty.", nameof(username));
-        }
 
-        if (await userSession.IsUsernameTakenAsync(username))
-        {
-            return null;
-        }
+        if (await userSession.IsUsernameTakenAsync(username)) return null;
 
         var user = new User
         {
@@ -34,17 +29,17 @@ public class UserService(
         };
 
         var data = JsonSerializer.Serialize(user);
-        
+
         await userSession.SetTemporaryUserAsync(
             user.UserId,
             data,
             _sessionTtl);
-        
+
         await userSession.SetUsernameMappingAsync(
             user.Username,
             user.UserId,
             _sessionTtl);
-        
+
         await userSession.SetLoginCodeMappingAsync(
             user.LoginCode,
             user.UserId,

@@ -1,0 +1,46 @@
+﻿@RTChatBackend_HostAddress = http://localhost:5186
+
+### Register User
+POST {{RTChatBackend_HostAddress}}/api/users/register
+Content-Type: application/json
+
+{
+  "username": "testuser"
+}
+
+### Login
+POST {{RTChatBackend_HostAddress}}/api/users/login
+Content-Type: application/json
+
+{
+  "loginCode": "TESTCODE"
+}
+
+### Get User (Requires Auth)
+GET {{RTChatBackend_HostAddress}}/api/users/testuser
+
+### Search Users (Requires Auth)
+GET {{RTChatBackend_HostAddress}}/api/users/search?username=test
+
+### Logout
+POST {{RTChatBackend_HostAddress}}/api/users/logout
+
+
+### Get User Chats (Requires Auth)
+GET {{RTChatBackend_HostAddress}}/api/chats/
+
+### Create or Get Chat (Requires Auth)
+# Replace uid2 with an actual userId you want to chat with
+POST {{RTChatBackend_HostAddress}}/api/chats?uid2=3fa85f64-5717-4562-b3fc-2c963f66afa6
+
+### Send Message (Requires Auth)
+POST {{RTChatBackend_HostAddress}}/api/messages
+Content-Type: application/json
+
+{
+  "chatId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "content": "Hello world!"
+}
+
+### Get Messages (Requires Auth)
+GET {{RTChatBackend_HostAddress}}/api/messages/3fa85f64-5717-4562-b3fc-2c963f66afa6

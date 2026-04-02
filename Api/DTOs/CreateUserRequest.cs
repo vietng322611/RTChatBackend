@@ -2,5 +2,5 @@
 
 public sealed class CreateUserRequest
 {
-    public string Username { get; set; } = "";    
+    public string Username { get; set; } = "";
 }

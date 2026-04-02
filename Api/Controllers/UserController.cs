@@ -12,7 +12,7 @@ namespace RTChatBackend.Api.Controllers;
 [Route("api/users/")]
 public class UserController(
     IUserService userService
-    ): ControllerBase
+) : ControllerBase
 {
     [Authorize]
     [HttpGet("{username}")]
@@ -21,7 +21,7 @@ public class UserController(
         var userDto = await userService.GetByUsernameAsync(username);
         return userDto == null ? NotFound() : Ok(userDto);
     }
-    
+
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] CreateUserRequest request)
     {
@@ -65,7 +65,7 @@ public class UserController(
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return Ok();
     }
-    
+
     [Authorize]
     [HttpGet("search")]
     public async Task<IActionResult> Search([FromQuery] string username)

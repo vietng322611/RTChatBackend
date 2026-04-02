@@ -2,7 +2,7 @@
 
 namespace RTChatBackend.Application.Services;
 
-public class CodeGenerator: ICodeGenerator
+public class CodeGenerator : ICodeGenerator
 {
     public string GenerateSessionCode()
     {

@@ -5,7 +5,7 @@ namespace RTChatBackend.Application.Services;
 
 public class ChatService(
     IChatStorageService chatStorage
-    ): IChatService
+) : IChatService
 {
     public async Task<ChatDto?> GetAsync(Guid chatId)
     {
