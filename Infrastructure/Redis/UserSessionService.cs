@@ -59,6 +59,8 @@ public class UserSessionService(
 
     public async Task<List<string>> GetAllUsernameAsync()
     {
+        var toRemove = new List<RedisValue>(); // batch removal
+        
         var result = new List<string>();
 
         var usernames = await _redis.SetMembersAsync("usernames");
@@ -70,13 +72,14 @@ public class UserSessionService(
             var userIdValue = await _redis.StringGetAsync($"username:{normalized}");
             if (!userIdValue.HasValue)
             {
-                // lazy cleanup
-                await _redis.SetRemoveAsync("usernames", username);
+                toRemove.Add(usernameValue); // stage for removal
                 continue;
             }
 
             result.Add(username);
         }
+        
+        await _redis.SetRemoveAsync("usernames", toRemove.ToArray());
 
         return result;
     }
