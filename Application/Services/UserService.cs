@@ -2,18 +2,14 @@
 using RTChatBackend.Application.DTOs;
 using RTChatBackend.Application.Interfaces;
 using RTChatBackend.Core.Models;
-using RTChatBackend.Infrastructure.Redis;
 
 namespace RTChatBackend.Application.Services;
 
 public class UserService(
-    RedisOptions options,
     IUserSessionService userSession,
     ICodeGenerator codeGenerator)
     : IUserService
 {
-    private readonly TimeSpan _sessionTtl = TimeSpan.FromMinutes(options.Ttl);
-
     public async Task<User?> CreateAsync(string username)
     {
         if (string.IsNullOrWhiteSpace(username))
@@ -30,20 +26,9 @@ public class UserService(
 
         var data = JsonSerializer.Serialize(user);
 
-        await userSession.SetTemporaryUserAsync(
-            user.UserId,
-            data,
-            _sessionTtl);
-
-        await userSession.SetUsernameMappingAsync(
-            user.Username,
-            user.UserId,
-            _sessionTtl);
-
-        await userSession.SetLoginCodeMappingAsync(
-            user.LoginCode,
-            user.UserId,
-            _sessionTtl);
+        await userSession.SetTemporaryUserAsync(user.UserId, data);
+        await userSession.SetUsernameMappingAsync(user.Username, user.UserId);
+        await userSession.SetLoginCodeMappingAsync(user.LoginCode, user.UserId);
 
         return user;
     }
@@ -86,8 +71,22 @@ public class UserService(
         };
     }
 
-    public Task<List<UserDto>> SearchAsync(string username)
+    public async Task<List<string>> SearchAsync(string query)
     {
-        throw new NotImplementedException();
+        if (query != string.Empty && string.IsNullOrWhiteSpace(query))
+            return [];
+
+        var usernames = await userSession.GetAllUsernamesAsync();
+
+        if (string.IsNullOrEmpty(query))
+            return usernames.OrderBy(u => u).ToList();
+
+        return usernames
+            .Where(u => u.Contains(query, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(u => u.Equals(query, StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+            .ThenBy(u => u.StartsWith(query, StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+            .ThenBy(u => u.Length)
+            .ThenBy(u => u)
+            .ToList();
     }
 }
