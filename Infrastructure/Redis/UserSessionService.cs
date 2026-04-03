@@ -57,29 +57,34 @@ public class UserSessionService(
         return await _redis.StringGetAsync($"temp-user:{userId}");
     }
 
-    public async Task<List<string>> GetAllUsernameAsync()
+    public async Task<List<string>> GetAllUsernamesAsync()
     {
-        var toRemove = new List<RedisValue>(); // batch removal
-        
-        var result = new List<string>();
-
         var usernames = await _redis.SetMembersAsync("usernames");
-        foreach (var usernameValue in usernames)
-        {
-            var username = usernameValue.ToString();
-            var normalized = username.ToLowerInvariant();
+        if (usernames.Length == 0) return [];
 
-            var userIdValue = await _redis.StringGetAsync($"username:{normalized}");
-            if (!userIdValue.HasValue)
+        var keys = usernames
+            .Select(u => (RedisKey)$"username:{u.ToString().ToLowerInvariant()}")
+            .ToArray();
+        var values = await _redis.StringGetAsync(keys);
+
+        var result = new List<string>();
+        var toRemove = new List<RedisValue>();
+
+        for (var i = 0; i < usernames.Length; i++)
+        {
+            if (!values[i].HasValue)
             {
-                toRemove.Add(usernameValue); // stage for removal
+                toRemove.Add(usernames[i]);
                 continue;
             }
 
-            result.Add(username);
+            result.Add(usernames[i].ToString());
         }
-        
-        await _redis.SetRemoveAsync("usernames", toRemove.ToArray());
+
+        if (toRemove.Count > 0)
+        {
+            await _redis.SetRemoveAsync("usernames", toRemove.ToArray());
+        }
 
         return result;
     }
