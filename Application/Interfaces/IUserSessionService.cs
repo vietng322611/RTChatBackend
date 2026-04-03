@@ -9,5 +9,5 @@ public interface IUserSessionService
     Task<Guid?> GetUserIdByUsernameAsync(string username);
     Task<Guid?> GetUserIdByLoginCodeAsync(string loginCode);
     Task<string?> GetUserDataAsync(Guid userId);
-    Task<List<string>> GetAllUsernameAsync();
+    Task<List<string>> GetAllUsernamesAsync();
 }
