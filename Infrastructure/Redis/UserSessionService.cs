@@ -14,7 +14,8 @@ public class UserSessionService(RedisConnectionFactory factory) : IUserSessionSe
 
     public Task<bool> IsUsernameTakenAsync(string username)
     {
-        return _redis.KeyExistsAsync($"username:{username}");
+        var normalizedUsername = username.ToLowerInvariant();
+        return _redis.KeyExistsAsync($"username:{normalizedUsername}");
     }
 
     public Task SetUsernameMappingAsync(string username, Guid userId, TimeSpan expiry)
