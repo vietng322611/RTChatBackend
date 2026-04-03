@@ -3,21 +3,26 @@ using StackExchange.Redis;
 
 namespace RTChatBackend.Infrastructure.Redis;
 
-public class UserSessionService(RedisConnectionFactory factory) : IUserSessionService
+public class UserSessionService(
+    RedisConnectionFactory factory,
+    RedisOptions options) : IUserSessionService
 {
     private readonly IDatabase _redis = factory.Connection.GetDatabase();
+    private readonly TimeSpan _sessionTtl = TimeSpan.FromMinutes(options.Ttl);
 
-    public Task SetTemporaryUserAsync(Guid userId, string data, TimeSpan expiry)
+    public Task SetTemporaryUserAsync(Guid userId, string data)
     {
-        return _redis.StringSetAsync($"temp-user:{userId}", data, expiry);
+        return _redis.StringSetAsync($"temp-user:{userId}", data, _sessionTtl);
     }
 
-    public async Task SetUsernameMappingAsync(string username, Guid userId, TimeSpan expiry)
+    public async Task SetUsernameMappingAsync(string username, Guid userId)
     {
         var normalized = username.ToLowerInvariant();
 
-        await _redis.StringSetAsync($"username:{normalized}", userId.ToString(), expiry);
-        await _redis.StringSetAsync($"username_display:{normalized}", username, expiry);
+        await _redis.StringSetAsync($"username:{normalized}", userId.ToString(), _sessionTtl);
+        
+        // store display username
+        await _redis.SetAddAsync("usernames", username);
     }
     
     public Task<bool> IsUsernameTakenAsync(string username)
@@ -25,9 +30,9 @@ public class UserSessionService(RedisConnectionFactory factory) : IUserSessionSe
         return _redis.KeyExistsAsync($"username:{username}");
     }
 
-    public Task SetLoginCodeMappingAsync(string loginCode, Guid userId, TimeSpan expiry)
+    public Task SetLoginCodeMappingAsync(string loginCode, Guid userId)
     {
-        return _redis.StringSetAsync($"login-code:{loginCode}", userId.ToString(), expiry);
+        return _redis.StringSetAsync($"login-code:{loginCode}", userId.ToString(), _sessionTtl);
     }
 
     public async Task<Guid?> GetUserIdByUsernameAsync(string username)
@@ -50,5 +55,29 @@ public class UserSessionService(RedisConnectionFactory factory) : IUserSessionSe
     public async Task<string?> GetUserDataAsync(Guid userId)
     {
         return await _redis.StringGetAsync($"temp-user:{userId}");
+    }
+
+    public async Task<List<string>> GetAllUsernameAsync()
+    {
+        var result = new List<string>();
+
+        var usernames = await _redis.SetMembersAsync("usernames");
+        foreach (var usernameValue in usernames)
+        {
+            var username = usernameValue.ToString();
+            var normalized = username.ToLowerInvariant();
+
+            var userIdValue = await _redis.StringGetAsync($"username:{normalized}");
+            if (!userIdValue.HasValue)
+            {
+                // lazy cleanup
+                await _redis.SetRemoveAsync("usernames", username);
+                continue;
+            }
+
+            result.Add(username);
+        }
+
+        return result;
     }
 }
