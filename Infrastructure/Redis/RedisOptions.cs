@@ -3,5 +3,5 @@
 public class RedisOptions
 {
     public string ConnectionString { get; set; } = null!;
-    public int Ttl { get; set; }
+    public int Ttl { get; set; } // One for all lmao
 }
