@@ -12,15 +12,17 @@ public class UserSessionService(RedisConnectionFactory factory) : IUserSessionSe
         return _redis.StringSetAsync($"temp-user:{userId}", data, expiry);
     }
 
+    public async Task SetUsernameMappingAsync(string username, Guid userId, TimeSpan expiry)
+    {
+        var normalized = username.ToLowerInvariant();
+
+        await _redis.StringSetAsync($"username:{normalized}", userId.ToString(), expiry);
+        await _redis.StringSetAsync($"username_display:{normalized}", username, expiry);
+    }
+    
     public Task<bool> IsUsernameTakenAsync(string username)
     {
-        var normalizedUsername = username.ToLowerInvariant();
-        return _redis.KeyExistsAsync($"username:{normalizedUsername}");
-    }
-
-    public Task SetUsernameMappingAsync(string username, Guid userId, TimeSpan expiry)
-    {
-        return _redis.StringSetAsync($"username:{username}", userId.ToString(), expiry);
+        return _redis.KeyExistsAsync($"username:{username}");
     }
 
     public Task SetLoginCodeMappingAsync(string loginCode, Guid userId, TimeSpan expiry)
@@ -30,7 +32,8 @@ public class UserSessionService(RedisConnectionFactory factory) : IUserSessionSe
 
     public async Task<Guid?> GetUserIdByUsernameAsync(string username)
     {
-        var value = await _redis.StringGetAsync($"username:{username}");
+        var normalized = username.ToLowerInvariant();
+        var value = await _redis.StringGetAsync($"username:{normalized}");
         return value.HasValue && Guid.TryParse(value.ToString(), out var userId)
             ? userId
             : null;
