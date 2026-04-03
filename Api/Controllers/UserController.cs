@@ -68,9 +68,9 @@ public class UserController(
 
     [Authorize]
     [HttpGet("search")]
-    public async Task<IActionResult> Search([FromQuery] string query)
+    public async Task<IActionResult> Search([FromQuery] string query = "")
     {
-        var userDtos = await userService.SearchAsync(query);
-        return Ok(userDtos);
+        var usernames = await userService.SearchAsync(query);
+        return Ok(usernames);
     }
 }
