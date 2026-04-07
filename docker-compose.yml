@@ -1,0 +1,18 @@
+﻿services:
+  rtchat-backend:
+    build:
+      context: ..
+      dockerfile: RTChatBackend.Api/Dockerfile
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - Redis__ConnectionString=redis:6379
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    restart: always
