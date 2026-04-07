@@ -1,8 +1,7 @@
 ﻿services:
   rtchat-backend:
     build:
-      context: ..
-      dockerfile: RTChatBackend.Api/Dockerfile
+      context: .
     ports:
       - "5000:8080"
     environment:
