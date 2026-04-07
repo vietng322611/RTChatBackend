@@ -15,6 +15,17 @@ public class UserController(
 ) : ControllerBase
 {
     [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> GetOwn()
+    {
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdString, out var userId)) return Unauthorized();
+        
+        var userDto = await userService.GetByUidAsync(userId);
+        return userDto == null ? NotFound() : Ok(userDto);
+    }
+    
+    [Authorize]
     [HttpGet("{username}")]
     public async Task<IActionResult> GetByUsername([FromRoute] string username)
     {

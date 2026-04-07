@@ -53,6 +53,21 @@ public class UserService(
         };
     }
 
+    public async Task<UserDto?> GetByUidAsync(Guid userId)
+    {
+        var userData = await userSession.GetUserDataAsync(userId);
+        if (userData == null) return null;
+
+        var user = JsonSerializer.Deserialize<User>(userData);
+        if (user == null) return null;
+
+        return new UserDto
+        {
+            UserId = user.UserId,
+            Username = user.Username
+        };
+    }
+
     public async Task<UserDto?> GetByUsernameAsync(string username)
     {
         var userId = await userSession.GetUserIdByUsernameAsync(username);

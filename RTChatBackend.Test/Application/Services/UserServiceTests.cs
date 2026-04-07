@@ -122,4 +122,36 @@ public class UserServiceTests
         Assert.Equal("Alicia", result[1]);
         Assert.Equal("Malice", result[2]);
     }
+
+    [Fact]
+    public async Task GetByUidAsync_UserExists_ReturnsUserDto()
+    {
+        var userId = Guid.NewGuid();
+        var user = new User
+        {
+            UserId = userId,
+            Username = "test_user",
+            LoginCode = "code"
+        };
+        var userData = JsonSerializer.Serialize(user);
+
+        _userSessionMock.Setup(s => s.GetUserDataAsync(userId)).ReturnsAsync(userData);
+
+        var result = await _userService.GetByUidAsync(userId);
+
+        Assert.NotNull(result);
+        Assert.Equal(userId, result.UserId);
+        Assert.Equal("test_user", result.Username);
+    }
+
+    [Fact]
+    public async Task GetByUidAsync_UserNotExists_ReturnsNull()
+    {
+        var userId = Guid.NewGuid();
+        _userSessionMock.Setup(s => s.GetUserDataAsync(userId)).ReturnsAsync((string?)null);
+
+        var result = await _userService.GetByUidAsync(userId);
+
+        Assert.Null(result);
+    }
 }
