@@ -1,9 +1,8 @@
-﻿using Moq;
-using RTChatBackend.Application.Interfaces;
+﻿using RTChatBackend.Application.Interfaces;
 using RTChatBackend.Application.Services;
 using RTChatBackend.Core.Models;
 
-namespace RTChatBackend.Tests.Application.Services;
+namespace RTChatBackend.Test.Application.Services;
 
 public class MessageServiceTests
 {

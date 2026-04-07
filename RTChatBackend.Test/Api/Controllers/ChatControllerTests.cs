@@ -1,12 +1,11 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Moq;
 using RTChatBackend.Api.Controllers;
 using RTChatBackend.Application.DTOs;
 using RTChatBackend.Application.Interfaces;
 
-namespace RTChatBackend.Tests.Api.Controllers;
+namespace RTChatBackend.Test.Api.Controllers;
 
 public class ChatControllerTests
 {

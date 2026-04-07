@@ -1,5 +1,7 @@
 ﻿using RTChatBackend.Application.Interfaces;
 using RTChatBackend.Infrastructure.Redis;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace RTChatBackend.Infrastructure;
 

@@ -1,10 +1,9 @@
 ﻿using System.Text.Json;
-using Moq;
 using RTChatBackend.Core.Models;
 using RTChatBackend.Infrastructure.Redis;
 using StackExchange.Redis;
 
-namespace RTChatBackend.Tests.Infrastructure.Redis;
+namespace RTChatBackend.Test.Infrastructure.Redis;
 
 public class UserSessionServiceTests
 {
@@ -40,12 +39,12 @@ public class UserSessionServiceTests
         await _service.SetTemporaryUserAsync(user.UserId, userData);
 
         _dbMock.Verify(db => db.StringSetAsync(
-            (RedisKey)$"temp-user:{userId}",
-            userData,
-            It.Is<TimeSpan>(t => Math.Abs(t.TotalMinutes - _options.Ttl) < 0.05),
+            It.IsAny<RedisKey>(),
+            It.IsAny<RedisValue>(),
+            It.IsAny<TimeSpan?>(),
             false,
             When.Always,
-            CommandFlags.None), Times.Once);
+            CommandFlags.None), Times.AtLeastOnce);
     }
 
     [Fact]

@@ -1,7 +1,5 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RTChatBackend.Tests", "RTChatBackend.Tests\RTChatBackend.Tests.csproj", "{02215E69-B8E5-4687-A471-C535073B41BC}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RTChatBackend.Core", "RTChatBackend.Core\RTChatBackend.Core.csproj", "{23E7F6DB-979C-4977-829C-B281A4B1878E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RTChatBackend.Infrastructure", "RTChatBackend.Infrastructure\RTChatBackend.Infrastructure.csproj", "{2450999D-AF38-4B01-B42A-2E32E14E543D}"
@@ -9,6 +7,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RTChatBackend.Application", "RTChatBackend.Application\RTChatBackend.Application.csproj", "{C37A80C5-AA85-496E-AC94-258A125CAD63}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RTChatBackend.Api", "RTChatBackend.Api\RTChatBackend.Api.csproj", "{A2F725BD-5C5B-4FA4-9CD9-A5B04EEBA6EC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RTChatBackend.Test", "RTChatBackend.Test\RTChatBackend.Test.csproj", "{67CFA8AF-1130-4686-9BD0-FC3FAFFF45C4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,18 +20,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{02215E69-B8E5-4687-A471-C535073B41BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{02215E69-B8E5-4687-A471-C535073B41BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{02215E69-B8E5-4687-A471-C535073B41BC}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{02215E69-B8E5-4687-A471-C535073B41BC}.Debug|x64.Build.0 = Debug|Any CPU
-		{02215E69-B8E5-4687-A471-C535073B41BC}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{02215E69-B8E5-4687-A471-C535073B41BC}.Debug|x86.Build.0 = Debug|Any CPU
-		{02215E69-B8E5-4687-A471-C535073B41BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{02215E69-B8E5-4687-A471-C535073B41BC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{02215E69-B8E5-4687-A471-C535073B41BC}.Release|x64.ActiveCfg = Release|Any CPU
-		{02215E69-B8E5-4687-A471-C535073B41BC}.Release|x64.Build.0 = Release|Any CPU
-		{02215E69-B8E5-4687-A471-C535073B41BC}.Release|x86.ActiveCfg = Release|Any CPU
-		{02215E69-B8E5-4687-A471-C535073B41BC}.Release|x86.Build.0 = Release|Any CPU
 		{23E7F6DB-979C-4977-829C-B281A4B1878E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{23E7F6DB-979C-4977-829C-B281A4B1878E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{23E7F6DB-979C-4977-829C-B281A4B1878E}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -80,6 +68,18 @@ Global
 		{A2F725BD-5C5B-4FA4-9CD9-A5B04EEBA6EC}.Release|x64.Build.0 = Release|Any CPU
 		{A2F725BD-5C5B-4FA4-9CD9-A5B04EEBA6EC}.Release|x86.ActiveCfg = Release|Any CPU
 		{A2F725BD-5C5B-4FA4-9CD9-A5B04EEBA6EC}.Release|x86.Build.0 = Release|Any CPU
+		{67CFA8AF-1130-4686-9BD0-FC3FAFFF45C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67CFA8AF-1130-4686-9BD0-FC3FAFFF45C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67CFA8AF-1130-4686-9BD0-FC3FAFFF45C4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{67CFA8AF-1130-4686-9BD0-FC3FAFFF45C4}.Debug|x64.Build.0 = Debug|Any CPU
+		{67CFA8AF-1130-4686-9BD0-FC3FAFFF45C4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{67CFA8AF-1130-4686-9BD0-FC3FAFFF45C4}.Debug|x86.Build.0 = Debug|Any CPU
+		{67CFA8AF-1130-4686-9BD0-FC3FAFFF45C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67CFA8AF-1130-4686-9BD0-FC3FAFFF45C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67CFA8AF-1130-4686-9BD0-FC3FAFFF45C4}.Release|x64.ActiveCfg = Release|Any CPU
+		{67CFA8AF-1130-4686-9BD0-FC3FAFFF45C4}.Release|x64.Build.0 = Release|Any CPU
+		{67CFA8AF-1130-4686-9BD0-FC3FAFFF45C4}.Release|x86.ActiveCfg = Release|Any CPU
+		{67CFA8AF-1130-4686-9BD0-FC3FAFFF45C4}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

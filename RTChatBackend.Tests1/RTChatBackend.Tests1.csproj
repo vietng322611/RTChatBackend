@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <RootNamespace>RTChatBackend.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,9 +14,15 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="xunit.v3" Version="3.2.2" />
+    <PackageReference Include="xunit.v3.runner.common" Version="3.2.2" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RTChatBackend.Api\RTChatBackend.Api.csproj" />
+    <ProjectReference Include="..\RTChatBackend.Infrastructure\RTChatBackend.Infrastructure.csproj" />
   </ItemGroup>
 </Project>

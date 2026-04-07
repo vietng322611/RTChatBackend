@@ -1,10 +1,9 @@
-﻿using Moq;
-using RTChatBackend.Application.Interfaces;
+﻿using RTChatBackend.Application.Interfaces;
 using RTChatBackend.Application.Services;
 using RTChatBackend.Core.Models;
 using System.Text.Json;
 
-namespace RTChatBackend.Tests.Application.Services;
+namespace RTChatBackend.Test.Application.Services;
 
 public class UserServiceTests
 {
@@ -118,8 +117,9 @@ public class UserServiceTests
 
         var result = await _userService.SearchAsync("Ali");
 
-        Assert.Equal(2, result.Count);
+        Assert.Equal(3, result.Count);
         Assert.Equal("Alice", result[0]);
         Assert.Equal("Alicia", result[1]);
+        Assert.Equal("Malice", result[2]);
     }
 }
