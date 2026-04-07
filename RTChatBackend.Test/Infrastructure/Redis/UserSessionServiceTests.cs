@@ -37,14 +37,14 @@ public class UserSessionServiceTests
         var userData = JsonSerializer.Serialize(user);
 
         await _service.SetTemporaryUserAsync(user.UserId, userData);
-
+        
         _dbMock.Verify(db => db.StringSetAsync(
-            It.IsAny<RedisKey>(),
+            It.Is<RedisKey>(k => k.ToString().StartsWith("temp-user:")),
             It.IsAny<RedisValue>(),
-            It.IsAny<TimeSpan?>(),
-            false,
-            When.Always,
-            CommandFlags.None), Times.AtLeastOnce);
+            It.IsAny<Expiration>(),
+            It.IsAny<ValueCondition>(),
+            It.IsAny<CommandFlags>()
+        ), Times.Once);
     }
 
     [Fact]
